@@ -13,7 +13,8 @@ import android.hardware.SensorManager;
 import android.widget.TextView;
 
 import java.util.List;
-
+import android.widget.Button;
+import android.view.View;
 
 public class MainActivity extends Activity  implements SensorEventListener{
     private SensorManager manager;
@@ -38,6 +39,17 @@ public class MainActivity extends Activity  implements SensorEventListener{
         values = (TextView)findViewById(R.id.header_text);
         values2 = (TextView)findViewById(R.id.header_text2);
         manager = (SensorManager)getSystemService(SENSOR_SERVICE);
+
+        Button button = (Button) findViewById(R.id.button);
+        // ボタンがクリックされた時に呼び出されるコールバックリスナーを登録します
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // ボタンがクリックされた時に呼び出されます
+                Button button = (Button) v;
+                values2.setText(values.getText());
+            }
+        });
     }
 
 
@@ -83,12 +95,10 @@ public class MainActivity extends Activity  implements SensorEventListener{
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
-        // TODO Auto-generated method stub
     }
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        // TODO Auto-generated method stub
         if(event.sensor.getType() == Sensor.TYPE_ORIENTATION) {
             String str = "傾きセンサー値:"
                         + "\n方位角:" + event.values[0]
