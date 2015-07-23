@@ -12,21 +12,28 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.widget.TextView;
 
+import java.util.HashMap;
 import java.util.List;
 import android.widget.Button;
 import android.view.View;
 
 public class MainActivity extends Activity  implements SensorEventListener{
     private SensorManager manager;
+    private WebView  myWebView;
     private TextView values;
     private TextView values2;
+    private HashMap<String,Float> sensor_value;
+    private HashMap<String,Float> sensor_value_base;
+    android.os.Handler customHandler;
+    private boolean is_button_clicked=false;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         //レイアウトで指定したWebViewのIDを指定する。
-        WebView  myWebView = (WebView)findViewById(R.id.web_view);
+        myWebView = (WebView)findViewById(R.id.web_view);
 
         //リンクをタップしたときに標準ブラウザを起動させない
         myWebView.setWebViewClient(new WebViewClient());
@@ -39,18 +46,41 @@ public class MainActivity extends Activity  implements SensorEventListener{
         values = (TextView)findViewById(R.id.header_text);
         values2 = (TextView)findViewById(R.id.header_text2);
         manager = (SensorManager)getSystemService(SENSOR_SERVICE);
+        sensor_value=new HashMap<String,Float>();
+        sensor_value.put("傾斜角", 0.0F);
+        sensor_value.put("回転角", 0.0F);
+        sensor_value_base=new HashMap<String,Float>();
+        sensor_value_base.put("傾斜角", 0.0F);
+        sensor_value_base.put("回転角", 0.0F);
+//        myWebView.scrollBy(0, (int) (sensor_value.get("傾斜角")-sensor_value_base.get("傾斜角")));
+
+        customHandler = new android.os.Handler();
+        customHandler.postDelayed(updateTimerThread, 0);
+
+
 
         Button button = (Button) findViewById(R.id.button);
-        // ボタンがクリックされた時に呼び出されるコールバックリスナーを登録します
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                is_button_clicked=true;
                 // ボタンがクリックされた時に呼び出されます
-                Button button = (Button) v;
+                sensor_value_base.put("傾斜角", sensor_value.get("傾斜角"));
+                sensor_value_base.put("回転角", sensor_value.get("回転角"));
                 values2.setText(values.getText());
             }
         });
     }
+
+    private Runnable updateTimerThread = new Runnable()
+    {
+        public void run()
+        {
+            //write here whaterver you want to repeat
+            customHandler.postDelayed(this, 5);
+            myWebView.scrollBy(0,(int) (sensor_value.get("傾斜角")-sensor_value_base.get("傾斜角"))/(-5));
+        }
+    };
 
 
     @Override
@@ -100,11 +130,17 @@ public class MainActivity extends Activity  implements SensorEventListener{
     @Override
     public void onSensorChanged(SensorEvent event) {
         if(event.sensor.getType() == Sensor.TYPE_ORIENTATION) {
+            sensor_value.put("傾斜角", event.values[1]);
+            sensor_value.put("回転角", event.values[2]);
+            if(!is_button_clicked){//初回の角度設定まではスクロールしない
+                sensor_value_base.put("傾斜角", event.values[1]);
+                sensor_value_base.put("回転角", event.values[2]);
+            }
             String str = "傾きセンサー値:"
-                        + "\n方位角:" + event.values[0]
-                        + "\n傾斜角:" + event.values[1]
-                        + "\n回転角:" + event.values[2];
-        values.setText(str);
+                        + "\n傾斜角:" + sensor_value.get("傾斜角")
+                        + "\n回転角:" + sensor_value.get("回転角")
+                        + "\nスクロール: "+(int) (sensor_value.get("傾斜角")-sensor_value_base.get("傾斜角"))/(-5);
+            values.setText(str);
         }
     }
 
