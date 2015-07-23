@@ -1,6 +1,7 @@
 package jp.ac.titech.itpro.sdl.degscrollwebview;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -30,6 +31,7 @@ public class MainActivity extends Activity  implements SensorEventListener{
     private int scroll_speed_inv=-5;
     private int scroll_direction=1;//1 or -1
 
+    private static final int SUBACTIVITY = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,9 +103,10 @@ public class MainActivity extends Activity  implements SensorEventListener{
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            Intent intent = new android.content.Intent(this, SettingsActivity.class);
+            startActivityForResult(intent, SUBACTIVITY);
             return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 
@@ -146,6 +149,15 @@ public class MainActivity extends Activity  implements SensorEventListener{
 
             ;
             values.setText(str);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        super.onActivityResult(requestCode, resultCode, intent);
+        if (requestCode == SUBACTIVITY){
+//                    scroll_direction=extras.getInt("scroll_direction");
+//                    scroll_speed_inv=extras.getInt("scroll_speed_inv");
         }
     }
 
