@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.WindowManager;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.hardware.Sensor;
@@ -26,6 +27,8 @@ public class MainActivity extends Activity  implements SensorEventListener{
     private HashMap<String,Float> sensor_value_base;
     android.os.Handler customHandler;
     private boolean is_button_clicked=false;
+    private int scroll_speed_inv=-5;
+    private int scroll_direction=1;//1 or -1
 
 
     @Override
@@ -52,7 +55,6 @@ public class MainActivity extends Activity  implements SensorEventListener{
         sensor_value_base=new HashMap<String,Float>();
         sensor_value_base.put("傾斜角", 0.0F);
         sensor_value_base.put("回転角", 0.0F);
-//        myWebView.scrollBy(0, (int) (sensor_value.get("傾斜角")-sensor_value_base.get("傾斜角")));
 
         customHandler = new android.os.Handler();
         customHandler.postDelayed(updateTimerThread, 0);
@@ -78,7 +80,7 @@ public class MainActivity extends Activity  implements SensorEventListener{
         {
             //write here whaterver you want to repeat
             customHandler.postDelayed(this, 5);
-            myWebView.scrollBy(0,(int) (sensor_value.get("傾斜角")-sensor_value_base.get("傾斜角"))/(-5));
+            myWebView.scrollBy(0,get_scroll_speed());
         }
     };
 
@@ -139,8 +141,26 @@ public class MainActivity extends Activity  implements SensorEventListener{
             String str = "傾きセンサー値:"
                         + "\n傾斜角:" + sensor_value.get("傾斜角")
                         + "\n回転角:" + sensor_value.get("回転角")
-                        + "\nスクロール: "+(int) (sensor_value.get("傾斜角")-sensor_value_base.get("傾斜角"))/(-5);
+                        + "\nスクロール: "+get_scroll_speed()
+                        + "\n反転:"+((WindowManager)getSystemService(WINDOW_SERVICE)).getDefaultDisplay().getRotation();
+
+            ;
             values.setText(str);
+        }
+    }
+
+    private int get_scroll_speed(){
+        switch (((WindowManager)getSystemService(WINDOW_SERVICE)).getDefaultDisplay().getRotation()){
+            case 0:
+                return (int) (sensor_value.get("傾斜角")-sensor_value_base.get("傾斜角"))/scroll_speed_inv*scroll_direction;
+            case 1:
+                return (int) (sensor_value.get("回転角")-sensor_value_base.get("回転角"))/scroll_speed_inv*(-1)*scroll_direction;
+            case 2:
+                return (int) (sensor_value.get("傾斜角")-sensor_value_base.get("傾斜角"))/scroll_speed_inv*(-1)*scroll_direction;
+            case 3:
+                return (int) (sensor_value.get("回転角")-sensor_value_base.get("回転角"))/scroll_speed_inv*scroll_direction;
+            default:
+                return 0;
         }
     }
 
